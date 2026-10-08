@@ -1,119 +1,141 @@
 package com.example.mapa2;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import org.osmdroid.config.Configuration;
-import org.osmdroid.events.MapEventsReceiver;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.MapEventsOverlay;
-import org.osmdroid.views.overlay.Marker;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements OnMapReadyCallback {
 
-    private MapView map = null;
+    private GoogleMap map;
     private Marker markerSeleccionado;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        Configuration.getInstance().setUserAgentValue("Mapa/ benja@gmail.com");
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.map);
 
-        map = findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.WIKIMEDIA);
-        map.setMultiTouchControls(true); //
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+    }
 
-        GeoPoint startPoint = new GeoPoint(-33.498895, -70.616617);
-        GeoPoint punto2 = new GeoPoint(-33.498720, -70.616130);
-        GeoPoint punto3 = new GeoPoint(-33.498561, -70.615666);
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
 
-        map.getController().setZoom(20.0);
-        Toast.makeText(this, "Tengo el codigo de la discodia", Toast.LENGTH_SHORT).show();
+        map = googleMap;
 
-        map.getController().setCenter(startPoint);
+        Toast.makeText(
+                this,
+                "Mapa de Google cargado",
+                Toast.LENGTH_SHORT
+        ).show();
 
-        Marker maker = new Marker(map);
-        maker.setPosition(startPoint);
-        maker.setTitle("Hola");
-        maker.setSnippet("Repartidor cerca");
+        LatLng puntoPrincipal =
+                new LatLng(-33.498895, -70.616617);
 
-        Marker maker2 = new Marker(map);
-        maker2.setPosition(punto2);
-        maker2.setIcon(
-                ContextCompat.getDrawable(
-                        this,
-                        R.mipmap.ic_launcher_repartidor_round)
+        LatLng puntoRepartidor =
+                new LatLng(-33.498720, -70.616130);
+
+        LatLng puntoPolicia =
+                new LatLng(-33.498561, -70.615666);
+
+
+        map.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                        puntoPrincipal,
+                        17
+                )
         );
-        maker2.setTitle("Hola");
-        maker2.setSnippet("Repartidor cerca");
 
-        Marker maker3 = new Marker(map);
-        maker3.setPosition(punto3);
-        maker3.setIcon(
-                ContextCompat.getDrawable(
-                        this,
-                        R.mipmap.ic_launcher_poli)
+        map.addMarker(
+                new MarkerOptions()
+                        .position(puntoPrincipal)
+                        .title("Punto principal")
+                        .snippet("Ubicación principal")
         );
-        maker3.setTitle("Hola");
-        maker3.setSnippet("Repartidor cerca");
 
 
-        map.getOverlays().add(maker);
-        map.getOverlays().add(maker2);
-        map.getOverlays().add(maker3);
-        map.invalidate();
+        map.addMarker(
+                new MarkerOptions()
+                        .position(puntoRepartidor)
+                        .title("Repartidor")
+                        .snippet("Repartidor cerca")
+                        .icon(
+                                BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_BLUE
+                                )
+                        )
+        );
 
 
-        MapEventsReceiver puntoSelecionado = new MapEventsReceiver() {
-            @Override
-            public boolean singleTapConfirmedHelper(GeoPoint p) {
-                double lat = p.getLatitude();
-                double lon = p.getLongitude();
+        map.addMarker(
+                new MarkerOptions()
+                        .position(puntoPolicia)
+                        .title("Policía")
+                        .snippet("Punto de referencia")
+                        .icon(
+                                BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_GREEN
+                                )
+                        )
+        );
 
-                Log.d("MAPA", "Latitud " + lat + " Longitud" + lon);
 
-                if (markerSeleccionado != null ) {
-                    map.getOverlays().remove(markerSeleccionado);
+
+        map.setOnMapClickListener(
+                new GoogleMap.OnMapClickListener() {
+
+                    @Override
+                    public void onMapClick(LatLng punto) {
+
+                        double latitud = punto.latitude;
+                        double longitud = punto.longitude;
+
+                        Log.d(
+                                "MAPA",
+                                "Latitud: " + latitud +
+                                        " Longitud: " + longitud
+                        );
+
+
+                        // Eliminar marcador seleccionado anterior
+
+                        if (markerSeleccionado != null) {
+                            markerSeleccionado.remove();
+                        }
+
+
+                        // Crear nuevo marcador
+
+                        markerSeleccionado =
+                                map.addMarker(
+                                        new MarkerOptions()
+                                                .position(punto)
+                                                .title("Punto seleccionado")
+                                                .snippet(
+                                                        "Lat: " + latitud +
+                                                                "\nLon: " + longitud
+                                                )
+                                );
+                    }
                 }
-
-                markerSeleccionado = new Marker(map);
-                markerSeleccionado.setPosition(p);
-                markerSeleccionado.setTitle("ACA");
-                markerSeleccionado.setAnchor(
-                        Marker.ANCHOR_CENTER,
-                        Marker.ANCHOR_BOTTOM
-                );
-                map.getOverlays().add(markerSeleccionado);
-                map.invalidate();
-
-                return true;
-            }
-
-            @Override
-            public boolean longPressHelper(GeoPoint p) {
-                return false;
-            }
-        };
-        MapEventsOverlay eventsOverlay = new MapEventsOverlay(puntoSelecionado);
-        map.getOverlays().add(eventsOverlay);
+        );
     }
 }
