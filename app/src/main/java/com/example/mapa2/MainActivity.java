@@ -115,14 +115,12 @@ public class MainActivity extends AppCompatActivity
                         );
 
 
-                        // Eliminar marcador seleccionado anterior
 
                         if (markerSeleccionado != null) {
                             markerSeleccionado.remove();
                         }
 
 
-                        // Crear nuevo marcador
 
                         markerSeleccionado =
                                 map.addMarker(

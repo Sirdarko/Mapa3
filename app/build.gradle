@@ -3,6 +3,9 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
+secrets {
+    propertiesFileName = "secret.properties"
+}
 android {
     namespace 'com.example.mapa2'
     compileSdk {
@@ -39,6 +42,8 @@ dependencies {
     implementation libs.appcompat
     implementation libs.constraintlayout
     implementation libs.material
+    implementation 'com.google.android.gms:play-services-maps:20.0.0'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
     testImplementation libs.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit
